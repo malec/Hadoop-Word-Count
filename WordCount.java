@@ -10,12 +10,18 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
+import java.io.PrintWriter;
 
 public class WordCount {
-	public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable>{
+	private static int mapCount = 0;
+
+	public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable> {
 		private final static IntWritable one = new IntWritable(1);
+		private static int mapCount = 0;
 		private Text word = new Text();
+
 		public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+			WordCount.mapCount = WordCount.mapCount + 1;
 			StringTokenizer itr = new StringTokenizer(value.toString());
 			while (itr.hasMoreTokens()) {
 				word.set(itr.nextToken());
@@ -23,9 +29,12 @@ public class WordCount {
 			}
 		}
 	}
-	public static class IntSumReducer extends Reducer<Text,IntWritable,Text,IntWritable> {
+
+	public static class IntSumReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 		private IntWritable result = new IntWritable();
-		public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+
+		public void reduce(Text key, Iterable<IntWritable> values, Context context)
+				throws IOException, InterruptedException {
 			int sum = 0;
 			for (IntWritable val : values) {
 				sum += val.get();
@@ -34,6 +43,7 @@ public class WordCount {
 			context.write(key, result);
 		}
 	}
+
 	public static void main(String[] args) throws Exception {
 		Configuration conf = new Configuration();
 		String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
@@ -50,6 +60,18 @@ public class WordCount {
 		job.setOutputValueClass(IntWritable.class);
 		FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
 		FileOutputFormat.setOutputPath(job, new Path(otherArgs[1]));
-		System.exit(job.waitForCompletion(true) ? 0 : 1);
+		boolean done = job.waitForCompletion(true);
+
+		PrintWriter writer = null;
+		try {
+			writer = new PrintWriter("output/mapCount", "UTF-8");
+			writer.print(mapCount);
+		} catch (Exception ex) {
+			System.out.println(ex.getMessage());
+		} finally {
+			writer.close();
+		}
+
+		System.exit(done ? 0 : 1);
 	}
 }
