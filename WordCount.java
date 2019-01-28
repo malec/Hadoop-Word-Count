@@ -17,11 +17,9 @@ public class WordCount {
 
 	public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable> {
 		private final static IntWritable one = new IntWritable(1);
-		private static int mapCount = 0;
 		private Text word = new Text();
-
 		public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-			WordCount.mapCount = WordCount.mapCount + 1;
+			WordCount.mapCount++;
 			StringTokenizer itr = new StringTokenizer(value.toString());
 			while (itr.hasMoreTokens()) {
 				word.set(itr.nextToken());
@@ -64,7 +62,7 @@ public class WordCount {
 
 		PrintWriter writer = null;
 		try {
-			writer = new PrintWriter("output/mapCount", "UTF-8");
+			writer = new PrintWriter(otherArgs[1] + "/map-count", "UTF-8");
 			writer.print(mapCount);
 		} catch (Exception ex) {
 			System.out.println(ex.getMessage());
