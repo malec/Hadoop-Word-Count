@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-core -->
+<dependency>
+    <groupId>org.apache.hadoop</groupId>
+    <artifactId>hadoop-core</artifactId>
+    <version>1.2.1</version>
+</dependency>
